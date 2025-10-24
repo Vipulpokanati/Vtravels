@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import QRCode from 'react-qr-code';
+
 const COUPONS = {
   SAVE10: { type: 'percentage', value: 10, name: '10% Off' },
   FLAT50: { type: 'flat', value: 50, name: 'Flat ₹50 Off' },
@@ -70,48 +71,48 @@ const Payment = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-4 sm:py-8 px-3 sm:px-4">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Complete Your Booking</h1>
-          <p className="text-gray-600">Secure payment · Instant confirmation</p>
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">Complete Your Booking</h1>
+          <p className="text-gray-600 text-sm sm:text-base">Secure payment · Instant confirmation</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl overflow-hidden">
           {/* Booking Summary */}
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Booking Summary</h2>
+          <div className="p-4 sm:p-6 border-b border-gray-200">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-3 sm:mb-4">Booking Summary</h2>
             
             {bus && (
-              <div className="bg-gray-50 rounded-xl p-4 mb-4">
-                <div className="flex justify-between items-start">
+              <div className="bg-gray-50 rounded-lg sm:rounded-xl p-3 sm:p-4 mb-3 sm:mb-4">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
                   <div>
-                    <h3 className="font-semibold text-gray-800">{bus.bus_name}</h3>
-                    <p className="text-gray-600 text-sm">{bus.origin} → {bus.destination}</p>
+                    <h3 className="font-semibold text-gray-800 text-sm sm:text-base">{bus.bus_name}</h3>
+                    <p className="text-gray-600 text-xs sm:text-sm">{bus.origin} → {bus.destination}</p>
                   </div>
-                  <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium">
+                  <span className="bg-blue-100 text-blue-700 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium">
                     {bus.number}
                   </span>
                 </div>
               </div>
             )}
 
-            <div className="space-y-3">
-              <p className="text-gray-700">
+            <div className="space-y-2 sm:space-y-3">
+              <p className="text-gray-700 text-sm sm:text-base">
                 <span className="font-semibold">Selected Seats:</span>{' '}
                 {bookedSeats.map(seat => `Seat ${seat.seat_number}`).join(', ')}
               </p>
-              <p className="text-gray-700">
+              <p className="text-gray-700 text-sm sm:text-base">
                 <span className="font-semibold">Number of Seats:</span> {bookedSeats.length}
               </p>
             </div>
           </div>
 
           {/* Price Breakdown */}
-          <div className="p-6 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Price Details</h3>
-            <div className="space-y-2">
+          <div className="p-4 sm:p-6 border-b border-gray-200">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">Price Details</h3>
+            <div className="space-y-2 text-sm sm:text-base">
               <div className="flex justify-between">
                 <span>Price per seat</span>
                 <span>₹{pricePerSeat}</span>
@@ -127,7 +128,7 @@ const Payment = () => {
                 </div>
               )}
               <div className="border-t pt-2 mt-2">
-                <div className="flex justify-between text-lg font-bold">
+                <div className="flex justify-between font-bold">
                   <span>Total Amount</span>
                   <span>₹{finalPrice}</span>
                 </div>
@@ -136,84 +137,84 @@ const Payment = () => {
           </div>
 
           {/* Coupon Section */}
-          <div className="p-6 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Apply Coupon</h3>
-            <div className="flex gap-3">
+          <div className="p-4 sm:p-6 border-b border-gray-200">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">Apply Coupon</h3>
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               <input
                 type="text"
                 value={couponCode}
                 onChange={(e) => setCouponCode(e.target.value)}
                 placeholder="Enter coupon code"
-                className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
               />
               <button 
                 onClick={applyCoupon}
-                className="px-6 py-3 bg-gray-800 text-white rounded-xl hover:bg-gray-900 transition-colors font-semibold"
+                className="px-4 sm:px-6 py-2 sm:py-3 bg-gray-800 text-white rounded-xl hover:bg-gray-900 transition-colors font-semibold text-sm sm:text-base"
               >
                 Apply
               </button>
             </div>
             {couponError && (
-              <p className="text-red-500 text-sm mt-2">{couponError}</p>
+              <p className="text-red-500 text-xs sm:text-sm mt-2">{couponError}</p>
             )}
             {appliedCoupon && !couponError && (
-              <p className="text-green-600 text-sm mt-2">
+              <p className="text-green-600 text-xs sm:text-sm mt-2">
                 ✅ {appliedCoupon.name} applied successfully!
               </p>
             )}
           </div>
 
           {/* Available Coupons */}
-          <div className="p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">Available Coupons</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3">Available Coupons</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
               {Object.entries(COUPONS).map(([code, coupon]) => (
-                <div key={code} className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-3 text-center">
-                  <div className="font-semibold text-blue-800">{code}</div>
-                  <div className="text-sm text-blue-600">{coupon.name}</div>
+                <div key={code} className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg sm:rounded-xl p-2 sm:p-3 text-center">
+                  <div className="font-semibold text-blue-800 text-xs sm:text-sm">{code}</div>
+                  <div className="text-xs text-blue-600">{coupon.name}</div>
                 </div>
               ))}
             </div>
           </div>
 
-{/* QR Section */}
-<div className="p-6 border-t border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
-  <div className="text-center">
-    <h4 className="text-xl font-bold text-gray-800 mb-6">
-      Scan to pay ₹{finalPrice.toFixed(2)}
-    </h4>
-    
-    <div className="flex justify-center mb-6">
-      <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
-        <QRCode 
-          value={`upi://pay?pa=6302543439@axl&pn=VipulStore&am=${finalPrice.toFixed(2)}&cu=INR`}
-          size={200}
-          className="rounded-lg"
-        />
-      </div>
-    </div>
-    
-    <div className="flex items-center justify-center space-x-3 bg-white rounded-xl p-4 border border-gray-200 shadow-sm max-w-md mx-auto">
-      <i className="fas fa-qrcode text-blue-500 text-lg"></i>
-      <p className="text-gray-700 font-medium">UPI ID: 6302543439@axl</p>
-    </div>
-    
-    <p className="text-gray-500 text-sm mt-4">
-      Scan this QR code with any UPI app to complete your payment
-    </p>
-  </div>
-</div>
+          {/* QR Section */}
+          <div className="p-4 sm:p-6 border-t border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+            <div className="text-center">
+              <h4 className="text-lg sm:text-xl font-bold text-gray-800 mb-4 sm:mb-6">
+                Scan to pay ₹{finalPrice.toFixed(2)}
+              </h4>
+              
+              <div className="flex justify-center mb-4 sm:mb-6">
+                <div className="bg-white p-3 sm:p-6 rounded-xl sm:rounded-2xl shadow-lg border border-gray-200">
+                  <QRCode 
+                    value={`upi://pay?pa=6302543439@axl&pn=VipulStore&am=${finalPrice.toFixed(2)}&cu=INR`}
+                    size={window.innerWidth < 640 ? 150 : 200}
+                    className="rounded-lg"
+                  />
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-center space-x-2 bg-white rounded-lg sm:rounded-xl p-3 border border-gray-200 shadow-sm max-w-md mx-auto">
+                <i className="fas fa-qrcode text-blue-500 text-base sm:text-lg"></i>
+                <p className="text-gray-700 font-medium text-sm sm:text-base">UPI ID: 6302543439@axl</p>
+              </div>
+              
+              <p className="text-gray-500 text-xs sm:text-sm mt-3 sm:mt-4">
+                Scan this QR code with any UPI app to complete your payment
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Payment Button */}
-        <div className="mt-8 text-center">
+        <div className="mt-6 sm:mt-8 text-center">
           <button
             onClick={handlePayment}
-            className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-4 px-12 rounded-xl text-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
+            className="w-full sm:w-auto bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 sm:py-4 px-8 sm:px-12 rounded-xl text-base sm:text-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
           >
             Confirm Booking
           </button>
-          <p className="text-gray-500 text-sm mt-3">
+          <p className="text-gray-500 text-xs sm:text-sm mt-2 sm:mt-3">
             🔒 Your payment is secure and encrypted
           </p>
         </div>
