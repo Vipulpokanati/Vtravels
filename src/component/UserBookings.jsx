@@ -1,47 +1,43 @@
 import axios from 'axios'
 import React, { useState, useEffect } from 'react'
 
-const UserBookings = ({token, userId}) => {
-    const [bookings, setBookings] = useState([])
-    const [bookingError, setBookingError] = useState(null)
+const UserBookings = ({ token, userId }) => {
+  const [bookings, setBookings] = useState([])
 
-useEffect(()=>{
-    const fetchBookings = async()=>{
-        if(!token || !userId){
-            return
-        }
-        try {
-            const response = await axios.get(`http://localhost:8000/api/user/${userId}/bookings/`,
-                {
-                    headers:{
-                        Authorization : `Token ${token}`
-                    }
-                }
-            )
-            console.log("Booking data = ", response.data)
-            setBookings(response.data)
-            console.log("checking for user bookings =", response.data)
-
-        } catch (error) {
-            console.log("fetching details failed", error)
-            setBookingError(
-                error.response?.data?.message
-            )
-        }
+  useEffect(() => {
+    const fetchBookings = async () => {
+      if (!token || !userId) return
+      try {
+        const response = await axios.get(`http://localhost:8000/api/user/${userId}/bookings/`, {
+          headers: { Authorization: `Token ${token}` }
+        })
+        // Sort bookings by newest first
+        const sortedBookings = response.data.sort(
+          (a, b) => new Date(b.booking_time) - new Date(a.booking_time)
+        )
+        setBookings(sortedBookings)
+      } catch (error) {
+        console.log('Error fetching bookings', error)
+      }
     }
     fetchBookings()
-}, [userId, token])
-    
+  }, [token, userId])
+
   return (
     <div>
-      {bookings.map((item)=>{
-        return (
-    <div key={item.id}>
-        {item.user} - {item.bus.bus_name} - {item.seat.seat_number} - {item.booking_time}
-    </div>
-    );
-
-      })}
+      <h2>Your Bookings</h2>
+      {bookings.length === 0 ? (
+        <p>No bookings yet.</p>
+      ) : (
+        bookings.map(b => (
+          <div key={b.id}>
+            <strong>{b.bus.bus_name}</strong> ({b.bus.bus_number})<br />
+            Seat: {b.seat.seat_number}<br />
+            Time: {new Date(b.booking_time).toLocaleString()}
+            <hr />
+          </div>
+        ))
+      )}
     </div>
   )
 }

@@ -1,94 +1,259 @@
-import React from "react";  
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 const Wrapper = ({ token, handlelogout, children }) => {
-    const navigate = useNavigate();
-    
-    const logout = () => {
-        const confirmLogout = window.confirm("Are you sure you want to logout?");
-        if (confirmLogout) {
-            handlelogout();
-            alert("You have been logged out.");
-            navigate("/");
-        }
-    };
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-    return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Navigation Header */}
-            <nav className="bg-white shadow-lg border-b border-gray-200">
-                <div className="max-w-7xl mx-auto px-3 sm:px-4">
-                    <div className="flex justify-between items-center h-14 sm:h-16">
-                        {/* Logo */}
-                        <Link to="/" className="flex items-center space-x-2">
-                            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                                <span className="text-white font-bold text-xs sm:text-sm">V</span>
-                            </div>
-                            <span className="text-lg sm:text-xl font-bold text-gray-800">Travels</span>
-                        </Link>
+  const logout = () => {
+    if (window.confirm("Are you sure you want to logout?")) {
+      handlelogout();
+      alert("You have been logged out successfully.");
+      navigate("/");
+    }
+  };
 
-                        {/* Navigation Links */}
-                        <div className="flex items-center space-x-2 sm:space-x-4">
-                            <Link to="/" className="text-gray-700 hover:text-blue-600 font-medium transition-colors text-sm sm:text-base">
-                                Browse Buses
-                            </Link>
-                            {token && (
-                                <Link to="/bookings" className="text-gray-700 hover:text-blue-600 font-medium transition-colors text-sm sm:text-base">
-                                    My Bookings
-                                </Link>
-                            )}
-                            
-                            {/* Auth Button */}
-                            {token ? (
-                                <button 
-                                    onClick={logout}
-                                    className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-semibold py-1.5 sm:py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 text-sm sm:text-base"
-                                >
-                                    Logout
-                                </button>
-                            ) : (
-                                <Link to="/login">
-                                    <button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-1.5 sm:py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-sm sm:text-base">
-                                        Login
-                                    </button>
-                                </Link>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </nav>
+  const isActiveRoute = (path) => {
+    return location.pathname === path;
+  };
 
-            {/* Main Content */}
-            <main className="pb-16 sm:pb-0">{children}</main>   
+  const navLinks = [
+    { path: "/", label: "Browse Buses", icon: "🚌" },
+    { path: "/bookings", label: "My Bookings", icon: "🎫" },
+  ];
 
-            {/* Mobile Footer Navigation */}
-            {token && (
-                <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-2 px-4">
-                    <div className="flex justify-around items-center">
-                        <Link to="/" className="flex flex-col items-center text-blue-600">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                            </svg>
-                            <span className="text-xs mt-1">Home</span>
-                        </Link>
-                        <Link to="/bookings" className="flex flex-col items-center text-gray-600">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                            </svg>
-                            <span className="text-xs mt-1">Bookings</span>
-                        </Link>
-                    </div>
-                </div>
-            )}
+  return (
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 text-gray-800">
+      {/* Enhanced Navbar */}
+      <nav className="bg-white/90 backdrop-blur-md shadow-lg sticky top-0 z-50 border-b border-gray-100">
+        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            {/* Logo */}
+            <Link 
+              to="/" 
+              className="flex items-center space-x-2 group"
+            >
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300">
+                <span className="text-white text-lg font-bold">🚌</span>
+              </div>
+              <div>
+                <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                  TravelEase
+                </h1>
+                <p className="text-xs text-gray-500 -mt-1">Seamless Journeys</p>
+              </div>
+            </Link>
 
-            {/* Footer */}
-            <footer className="bg-gray-800 text-white py-6 sm:py-8 mt-8 sm:mt-16">
-                <div className="max-w-7xl mx-auto px-3 sm:px-4 text-center">
-                    <p className="text-sm sm:text-base">&copy; 2024 BusTravel. All rights reserved. Comfortable journeys made easy.</p>
-                </div>
-            </footer>
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-1">
+              {token && navLinks.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 font-medium ${
+                    isActiveRoute(link.path)
+                      ? "bg-blue-50 text-blue-600 border border-blue-200 shadow-sm"
+                      : "text-gray-600 hover:text-blue-600 hover:bg-blue-50/50"
+                  }`}
+                >
+                  <span>{link.icon}</span>
+                  <span>{link.label}</span>
+                </Link>
+              ))}
+            </div>
+
+            {/* Auth Section */}
+            <div className="hidden md:flex items-center space-x-3">
+              {token ? (
+                <>
+                  <div className="text-sm text-gray-500 border-r border-gray-200 pr-3">
+                    Welcome back! 👋
+                  </div>
+                  <button
+                    onClick={logout}
+                    className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg transition-all duration-200 shadow-md hover:shadow-lg font-medium group"
+                  >
+                    <span className="group-hover:scale-110 transition-transform">🚪</span>
+                    <span>Logout</span>
+                  </button>
+                </>
+              ) : (
+                <Link to="/login">
+                  <button className="flex items-center space-x-2 px-6 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-lg transition-all duration-200 shadow-md hover:shadow-lg font-medium group">
+                    <span className="group-hover:scale-110 transition-transform">🔑</span>
+                    <span>Login</span>
+                  </button>
+                </Link>
+              )}
+            </div>
+
+            {/* Mobile menu button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden p-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {isMobileMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+          </div>
+
+          {/* Mobile Navigation */}
+          {isMobileMenuOpen && (
+            <div className="md:hidden py-4 border-t border-gray-200 animate-slideDown">
+              <div className="space-y-2">
+                {token && navLinks.map((link) => (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 font-medium ${
+                      isActiveRoute(link.path)
+                        ? "bg-blue-50 text-blue-600 border border-blue-200"
+                        : "text-gray-600 hover:text-blue-600 hover:bg-blue-50"
+                    }`}
+                  >
+                    <span className="text-lg">{link.icon}</span>
+                    <span>{link.label}</span>
+                  </Link>
+                ))}
+                {token ? (
+                  <button
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      logout();
+                    }}
+                    className="w-full flex items-center space-x-3 px-4 py-3 bg-red-50 text-red-600 rounded-lg transition-colors font-medium hover:bg-red-100"
+                  >
+                    <span>🚪</span>
+                    <span>Logout</span>
+                  </button>
+                ) : (
+                  <Link
+                    to="/login"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center space-x-3 px-4 py-3 bg-blue-50 text-blue-600 rounded-lg transition-colors font-medium hover:bg-blue-100"
+                  >
+                    <span>🔑</span>
+                    <span>Login</span>
+                  </Link>
+                )}
+              </div>
+            </div>
+          )}
         </div>
-    );
+      </nav>
+
+      {/* Main Content */}
+      <main className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+        {children}
+      </main>
+
+      {/* Enhanced Footer */}
+      <footer className=" bg-white/90 backdrop-blur-md border-t border-gray-200">
+        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {/* Company Info */}
+            <div className="col-span-1 md:col-span-2">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white text-sm font-bold">🚌</span>
+                </div>
+                <h3 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                  TravelEase
+                </h3>
+              </div>
+              <p className="text-gray-600 text-sm leading-relaxed max-w-md">
+                Your trusted partner for seamless bus travel experiences. 
+                Book your journeys with confidence and travel with ease across the country.
+              </p>
+            </div>
+
+            {/* Quick Links */}
+            <div>
+              <h4 className="font-semibold text-gray-800 mb-4">Quick Links</h4>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <Link to="/" className="text-gray-600 hover:text-blue-600 transition-colors">
+                    Browse Buses
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/bookings" className="text-gray-600 hover:text-blue-600 transition-colors">
+                    My Bookings
+                  </Link>
+                </li>
+                <li>
+                  <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors">
+                    Help Center
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            {/* Contact Info */}
+            <div>
+              <h4 className="font-semibold text-gray-800 mb-4">Support</h4>
+              <ul className="space-y-2 text-sm text-gray-600">
+                <li className="flex items-center space-x-2">
+                  <span>📞</span>
+                  <span>+91 6302543439</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <span>✉️</span>
+                  <span>pokanativipul@gmail.com</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <span>🕒</span>
+                  <span>24/7 Customer Support</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Bottom Bar */}
+          <div className="border-t border-gray-200 mt-8 pt-6 flex flex-col md:flex-row justify-evenly items-center">
+            <p className="text-gray-500 text-sm">
+              © {new Date().getFullYear()} TravelEase. All rights reserved.
+            </p>
+            <div className="flex space-x-6 mt-4 md:mt-0">
+              <a href="#" className="text-gray-400 hover:text-blue-600 transition-colors text-sm">
+                Privacy Policy
+              </a>
+              <a href="#" className="text-gray-400 hover:text-blue-600 transition-colors text-sm">
+                Terms of Service
+              </a>
+              <a href="#" className="text-gray-400 hover:text-blue-600 transition-colors text-sm">
+                Cookie Policy
+              </a>
+            </div>
+          </div>
+        </div>
+      </footer>
+
+      {/* Custom CSS for animations */}
+      <style jsx>{`
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-slideDown {
+          animation: slideDown 0.3s ease-out;
+        }
+      `}</style>
+    </div>
+  );
 };
 
 export default Wrapper;
