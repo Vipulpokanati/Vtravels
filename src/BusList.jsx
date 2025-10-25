@@ -19,7 +19,7 @@ const BusList = ({ userId }) => {
       }
     }, 1000);
 
-    axios.get('http://localhost:8000/api/buses/')
+    axios.get('https://travels-nkfu.onrender.com/api/buses/')
       .then(res => {
         setBuses(res.data);
         setLoading(false);

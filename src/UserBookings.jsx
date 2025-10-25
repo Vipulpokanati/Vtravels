@@ -19,7 +19,7 @@ const UserBookings = ({ token, userId }) => {
     }, 1000);
 
     axios
-      .get(`http://localhost:8000/api/user/${userId}/bookings/`, {
+      .get(`https://travels-nkfu.onrender.com/api/user/${userId}/bookings/`, {
         headers: { Authorization: `Token ${token}` },
       })
       .then((res) => {

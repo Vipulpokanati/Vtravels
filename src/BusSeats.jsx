@@ -23,7 +23,7 @@ const BusSeats = ({ token, userId }) => {
     }, 1000);
 
     axios
-      .get(`http://localhost:8000/api/buses/${busId}`)
+      .get(`https://travels-nkfu.onrender.com/api/buses/${busId}`)
       .then((res) => {
         setBus(res.data);
         setSeats(res.data.seats || []);

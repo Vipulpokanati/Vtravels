@@ -14,7 +14,7 @@ const LoginForm = ({ onLogin }) => {
   const handleSubmit = async e => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:8000/api/login/', form);
+      const response = await axios.post('https://travels-nkfu.onrender.com/api/login/', form);
       setMessage('Login Successful ✅');
       if (onLogin) {
         onLogin(response.data.token, response.data.user_id);

@@ -14,7 +14,7 @@ const RegisterForm = () => {
   const handleSubmit = async e => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:8000/api/register/', form);
+      await axios.post('https://travels-nkfu.onrender.com/api/register/', form);
       setMessage('Registration successful ✅');
       navigate('/login');
     } catch (error) {

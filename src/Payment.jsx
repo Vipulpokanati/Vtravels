@@ -84,7 +84,7 @@ const Payment = ({ token, userId }) => {
     try {
       for (let seat of bookedSeats) {
         await axios.post(
-          'http://localhost:8000/api/bookings/',
+          'https://travels-nkfu.onrender.com/api/bookings/',
           { seat: seat.id },
           { headers: { Authorization: `Token ${token}` } }
         );
