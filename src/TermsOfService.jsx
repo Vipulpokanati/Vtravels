@@ -30,7 +30,7 @@ const TermsOfService = () => {
 
       <p className="text-gray-600">
         For questions, please contact us at{" "}
-        <span className="font-medium text-blue-600">support@travelease.com</span>.
+        <span className="font-medium text-blue-600">pokanativipul@gmail.com</span>.
       </p>
     </div>
   );
