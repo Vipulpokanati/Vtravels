@@ -7,6 +7,10 @@ import BusSeats from './BusSeats';
 import Wrapper from './Wrapper';
 import UserBookings from './UserBookings';
 import Payment from './Payment';
+import PrivacyPolicy from './PrivacyPolicy';
+import TermsOfService from './TermsofService';
+import CookiePolicy from './CookiePolicy';
+import HelpCenter from './HelpCenter';
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
@@ -37,6 +41,10 @@ function App() {
         <Route path='/bus/:busId' element={<BusSeats token={token} userId={userId} />} />
         <Route path='/payment' element={<Payment token={token} userId={userId} />} />
         <Route path='/bookings' element={<UserBookings token={token} userId={userId} />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-of-service" element={<TermsOfService />} />
+        <Route path="/cookie-policy" element={<CookiePolicy />} />
+        <Route path="/help-center" element={<HelpCenter />} />
       </Routes>
     </Wrapper>
   );

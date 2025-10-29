@@ -183,15 +183,22 @@ const Wrapper = ({ token, handlelogout, children }) => {
                     Browse Buses
                   </Link>
                 </li>
+            {token && (
+                  <li>
+                    <Link
+                      to="/bookings"
+                      className="text-gray-600 hover:text-blue-600 transition-colors"
+                    >
+                      My Bookings
+                    </Link>
+                  </li>
+                )}
+
                 <li>
-                  <Link to="/bookings" className="text-gray-600 hover:text-blue-600 transition-colors">
-                    My Bookings
-                  </Link>
-                </li>
-                <li>
-                  <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors">
+                  <Link to="/help-center" className="text-gray-600 hover:text-blue-600 transition-colors">
                     Help Center
-                  </a>
+                  </Link>
+
                 </li>
               </ul>
             </div>
@@ -222,36 +229,37 @@ const Wrapper = ({ token, handlelogout, children }) => {
               © {new Date().getFullYear()} TravelEase. All rights reserved.
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
-              <a href="#" className="text-gray-400 hover:text-blue-600 transition-colors text-sm">
+              <Link to="/privacy-policy" className="text-gray-400 hover:text-blue-600 transition-colors text-sm">
                 Privacy Policy
-              </a>
-              <a href="#" className="text-gray-400 hover:text-blue-600 transition-colors text-sm">
+              </Link>
+              <Link to="/terms-of-service" className="text-gray-400 hover:text-blue-600 transition-colors text-sm">
                 Terms of Service
-              </a>
-              <a href="#" className="text-gray-400 hover:text-blue-600 transition-colors text-sm">
+              </Link>
+              <Link to="/cookie-policy" className="text-gray-400 hover:text-blue-600 transition-colors text-sm">
                 Cookie Policy
-              </a>
+              </Link>
             </div>
           </div>
         </div>
       </footer>
 
       {/* Custom CSS for animations */}
-      <style jsx>{`
-        @keyframes slideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-slideDown {
-          animation: slideDown 0.3s ease-out;
-        }
-      `}</style>
+      <style>{`
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .animate-slideDown {
+    animation: slideDown 0.3s ease-out;
+  }
+`}</style>
+
     </div>
   );
 };

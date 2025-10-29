@@ -284,32 +284,35 @@ const Payment = ({ token, userId }) => {
           </p>
         </div>
 
-        {/* Coupon Input */}
-        <div className="mb-6">
-          <label className="block text-gray-600 mb-2 font-medium">
-            Have a coupon?
-          </label>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={couponCode}
-              placeholder="Enter coupon code"
-              onChange={(e) => setCouponCode(e.target.value)}
-              className="flex-grow border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-400 outline-none"
-              disabled={processing}
-            />
-            <button
-              onClick={applyCoupon}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition disabled:bg-gray-400"
-              disabled={processing}
-            >
-              Apply
-            </button>
-          </div>
-          {couponError && (
-            <p className="text-red-500 text-sm mt-2">{couponError}</p>
-          )}
-        </div>
+<div className="mb-6">
+  <label className="block text-gray-600 mb-2 font-medium">
+    Have a coupon?
+  </label>
+
+  {/* Input + Button side by side */}
+  <div className="flex items-center gap-2">
+    <input
+      type="text"
+      value={couponCode}
+      placeholder="Enter coupon code"
+      onChange={(e) => setCouponCode(e.target.value)}
+      className="flex-grow border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-400 outline-none min-w-0"
+      disabled={processing}
+    />
+    <button
+      onClick={applyCoupon}
+      className="shrink-0 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition disabled:bg-gray-400"
+      disabled={processing}
+    >
+      Apply
+    </button>
+  </div>
+
+  {couponError && (
+    <p className="text-red-500 text-sm mt-2">{couponError}</p>
+  )}
+</div>
+
 
         {/* QR Code Section */}
         <div className="my-6 p-5 bg-gray-50 border border-gray-200 rounded-xl flex flex-col items-center gap-4 shadow-sm">
