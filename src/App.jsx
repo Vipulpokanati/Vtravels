@@ -8,9 +8,9 @@ import Wrapper from './Wrapper';
 import UserBookings from './UserBookings';
 import Payment from './Payment';
 import PrivacyPolicy from './PrivacyPolicy';
-import TermsOfService from './TermsofService';
 import CookiePolicy from './CookiePolicy';
 import HelpCenter from './HelpCenter';
+import TermsOfService from './TermsOfService';
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
