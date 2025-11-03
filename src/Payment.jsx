@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import QRCode from "react-qr-code";
 import emailjs from "@emailjs/browser";
-
+import { formatTo12Hour } from './utils/formatTime'
 const COUPONS = {
   SAVE10: { type: "percentage", value: 10 },
   FLAT50: { type: "flat", value: 50 },
@@ -24,17 +24,17 @@ const Payment = ({ token, userId }) => {
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [formData, setFormData] = useState({ username: "", email: "" });
-
+  
   const bus = location.state?.bus;
 
-  // Format time like "14:30"
-  const formatTime = (timeStr) => {
-    if (!timeStr) return "";
-    const [hour, minute] = timeStr.split(":");
-    const date = new Date();
-    date.setHours(hour, minute);
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  };
+  // // Format time like "14:30"
+  // const formatTime = (timeStr) => {
+  //   if (!timeStr) return "";
+  //   const [hour, minute] = timeStr.split(":");
+  //   const date = new Date();
+  //   date.setHours(hour, minute);
+  //   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  // };
 
   // Load initial data
   useEffect(() => {
@@ -120,7 +120,7 @@ const Payment = ({ token, userId }) => {
         destination: bus.destination,
         ticket_id: ticketId,
         journey_date: new Date().toISOString().split("T")[0],
-        journey_time: formatTime(bus.start_time),
+        journey_time: formatTo12Hour(bus.start_time),
         seat_numbers: successfullyBookedSeats.join(", "),
         total_price: totalPrice,
         current_year: new Date().getFullYear(),
@@ -256,7 +256,7 @@ const Payment = ({ token, userId }) => {
           <div className="flex justify-between items-center mb-4">
             <div className="text-left">
               <div className="font-bold text-black text-lg">
-                {formatTime(bus.start_time)}
+                {formatTo12Hour(bus.start_time)}
               </div>
               <div className="text-gray-700 text-base">{bus?.origin}</div>
             </div>
@@ -265,7 +265,7 @@ const Payment = ({ token, userId }) => {
             </div>
             <div className="text-right">
               <div className="font-bold text-black text-lg">
-                {formatTime(bus.end_time)}
+                {formatTo12Hour(bus.end_time)}
               </div>
               <div className="text-gray-700 text-base">{bus?.destination}</div>
             </div>

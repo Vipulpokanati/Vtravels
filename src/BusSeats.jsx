@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { formatTo12Hour } from './utils/formatTime'
 
 const BusSeats = ({ token, userId }) => {
   const [bus, setBus] = useState(null);
@@ -45,12 +46,12 @@ const BusSeats = ({ token, userId }) => {
     };
   }, [busId, loading]);
 
-  const formatTime = (timeStr) => {
-    const [hour, minute] = timeStr.split(':');
-    const date = new Date();
-    date.setHours(hour, minute);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
+  // const formatTime = (timeStr) => {
+  //   const [hour, minute] = timeStr.split(':');
+  //   const date = new Date();
+  //   date.setHours(hour, minute);
+  //   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  // };
 
   // Toggle seat selection
   const toggleSeat = (seat) => {
@@ -188,7 +189,7 @@ const BusSeats = ({ token, userId }) => {
               {bus.origin} → {bus.destination}
             </p>
             <p className="text-sm text-gray-500 mt-1">
-              Start: {formatTime(bus.start_time)} | End: {formatTime(bus.end_time)}
+              Start: {formatTo12Hour(bus.start_time)} | End: {formatTo12Hour(bus.end_time)}
             </p>
             <p className="text-sm text-gray-500 mt-1">Price: ₹{bus.price} per seat</p>
           </div>

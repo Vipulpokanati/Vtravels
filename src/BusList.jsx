@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { formatTo12Hour } from './utils/formatTime'
 
 const BusList = ({ userId ,token}) => {
   const [buses, setBuses] = useState([]);
@@ -39,12 +40,7 @@ const BusList = ({ userId ,token}) => {
     };
   }, []);
 
-  const formatTime = (timeStr) => {
-    const [hour, minute] = timeStr.split(':');
-    const date = new Date();
-    date.setHours(hour, minute);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
+
 
   // Filter buses based on search term
   const filteredBuses = buses.filter(bus => 
@@ -175,7 +171,7 @@ const BusList = ({ userId ,token}) => {
           </svg>
           <span className="text-sm font-medium">Departure</span>
         </div>
-        <p className="text-lg font-semibold text-gray-900">{formatTime(bus.start_time)}</p>
+        <p className="text-lg font-semibold text-gray-900">{formatTo12Hour(bus.start_time)}</p>
       </div>
       
       <div className="space-y-1">
@@ -185,7 +181,7 @@ const BusList = ({ userId ,token}) => {
           </svg>
           <span className="text-sm font-medium">Arrival</span>
         </div>
-        <p className="text-lg font-semibold text-gray-900">{formatTime(bus.end_time)}</p>
+        <p className="text-lg font-semibold text-gray-900">{formatTo12Hour(bus.end_time)}</p>
       </div>
     </div>
 

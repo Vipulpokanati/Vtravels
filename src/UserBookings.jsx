@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-
+import { formatTo12Hour } from './utils/formatTime'
 const UserBookings = ({ token, userId }) => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingDelay, setLoadingDelay] = useState(false);
 
-  const formatTime = (timeStr) => {
-    if (!timeStr) return "";
-    const [hour, minute] = timeStr.split(":");
-    const date = new Date();
-    date.setHours(hour, minute);
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  };
+  // const formatTime = (timeStr) => {
+  //   if (!timeStr) return "";
+  //   const [hour, minute] = timeStr.split(":");
+  //   const date = new Date();
+  //   date.setHours(hour, minute);
+  //   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  // };
 
   useEffect(() => {
     if (!token || !userId) return;
@@ -183,7 +183,7 @@ const UserBookings = ({ token, userId }) => {
 
                       <div className="text-gray-600 text-sm mb-2 space-y-1">
                         <p>📅 Journey Date: {b.booking_time?.split(" ")[0]}</p>
-                        <p>🕒 Time: {formatTime(b.start_time)}</p>
+                        <p>🕒 Time: {formatTo12Hour(b.start_time)}</p>
                         <p>💺 Seat No(s): {b.seats?.join(", ")}</p>
                         <p>
                           🧾 Total: ₹{parseFloat(b.total_price || 0).toFixed(2)}
