@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import QRCode from 'react-qr-code';
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import axios from "axios";
+import QRCode from "react-qr-code";
+import emailjs from "@emailjs/browser";
 
 const COUPONS = {
-  SAVE10: { type: 'percentage', value: 10 },
-  FLAT50: { type: 'flat', value: 50 },
-  SAVE20: { type: 'percentage', value: 20 },
+  SAVE10: { type: "percentage", value: 10 },
+  FLAT50: { type: "flat", value: 50 },
+  SAVE20: { type: "percentage", value: 20 },
 };
 
 const Payment = ({ token, userId }) => {
@@ -17,327 +18,421 @@ const Payment = ({ token, userId }) => {
   const [pricePerSeat, setPricePerSeat] = useState(0);
   const [totalPrice, setTotalPrice] = useState(0);
   const [finalPrice, setFinalPrice] = useState(0);
-  const [couponCode, setCouponCode] = useState('');
+  const [couponCode, setCouponCode] = useState("");
   const [discountAmount, setDiscountAmount] = useState(0);
-  const [couponError, setCouponError] = useState('');
+  const [couponError, setCouponError] = useState("");
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
+  const [formData, setFormData] = useState({ username: "", email: "" });
+
+  const bus = location.state?.bus;
 
   const formatTime = (timeStr) => {
-    const [hour, minute] = timeStr.split(':');
+    if (!timeStr) return "";
+    const [hour, minute] = timeStr.split(":");
     const date = new Date();
     date.setHours(hour, minute);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
   useEffect(() => {
-    // Simulate loading for payment page initialization
-    const timer = setTimeout(() => {
-      if (!location.state || !location.state.bookedSeats || !location.state.bus) {
-        alert('No seats or bus selected.');
-        navigate('/');
-        return;
+    if (!location.state || !location.state.bookedSeats || !bus) {
+      alert("No seats or bus selected.");
+      navigate("/");
+      return;
+    }
+    
+    const seats = location.state.bookedSeats;
+    setBookedSeats(seats);
+
+    const price = bus.price;
+    setPricePerSeat(price);
+
+    const total = price * seats.length;
+    setTotalPrice(total);
+    setFinalPrice(total);
+
+    const fetchUser = async () => {
+      try {
+        const userRes = await axios.get(
+          `https://travels-nkfu.onrender.com/api/users/${userId}`,
+          { headers: { Authorization: `Token ${token}` } }
+        );
+        setFormData({
+          username: userRes.data.username,
+          email: userRes.data.email,
+        });
+      } catch (err) {
+        console.error("Error fetching user", err);
+      } finally {
+        setLoading(false);
       }
+    };
 
-      const seats = location.state.bookedSeats;
-      setBookedSeats(seats);
-
-      const price = location.state.bus?.price;
-      if (!price) {
-        alert('Network error. Please try again.');
-        navigate(-1);
-        return;
-      }
-
-      setPricePerSeat(price);
-      const total = price * seats.length;
-      setTotalPrice(total);
-      setFinalPrice(total);
-      setLoading(false);
-    }, 800);
-
-    return () => clearTimeout(timer);
-  }, [location.state, navigate]);
+    fetchUser();
+  }, [location.state, navigate, bus, token, userId]);
 
   const applyCoupon = () => {
     const coupon = COUPONS[couponCode.toUpperCase()];
     if (!coupon) {
-      setCouponError('❌ Invalid coupon code');
+      setCouponError("❌ Invalid coupon code");
       setDiscountAmount(0);
       setFinalPrice(totalPrice);
       return;
     }
 
     let discount =
-      coupon.type === 'percentage'
+      coupon.type === "percentage"
         ? (totalPrice * coupon.value) / 100
         : coupon.value;
 
     discount = Math.min(discount, totalPrice);
     setDiscountAmount(discount);
     setFinalPrice(totalPrice - discount);
-    setCouponError('');
+    setCouponError("");
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const sendConfirmationEmail = async ({
+    userName,
+    userEmail,
+    bus,
+    ticketId,
+    successfullyBookedSeats,
+    totalPrice,
+  }) => {
+    try {
+      const templateParams = {
+        logo_url: "https://www.travelease.in/travelease-logo-square.png",
+        user_name: userName,
+        bus_name: bus.bus_name,
+        bus_number: bus.bus_number,
+        origin: bus.origin,
+        destination: bus.destination,
+        ticket_id: ticketId,
+        journey_date: new Date().toISOString().split("T")[0],
+        journey_time: formatTime(bus.start_time),
+        seat_numbers: successfullyBookedSeats.join(", "),
+        total_price: totalPrice,
+        current_year: new Date().getFullYear(),
+        email: userEmail,
+      };
+
+      if (!userEmail) {
+        alert("⚠️ No email provided. Cannot send confirmation email.");
+        return;
+      }
+
+      await emailjs.send(
+        "service_wjnken8",
+        "template_idforue",
+        templateParams,
+        "MjuqnA9kYySUFbId7"
+      );
+
+      alert("✅ Booking Confirmed! Confirmation email sent.");
+    } catch (err) {
+      console.error("EmailJS Error:", err);
+      alert(
+        "⚠️ Booking succeeded, but confirmation email could not be sent."
+      );
+    }
   };
 
   const handlePayment = async () => {
     setProcessing(true);
-    try {
-      for (let seat of bookedSeats) {
-        await axios.post(
-          'https://travels-nkfu.onrender.com/api/bookings/',
-          { seat: seat.id },
-          { headers: { Authorization: `Token ${token}` } }
-        );
-      }
-      setTimeout(() => {
-        setProcessing(false);
-        alert('✅ Booking Confirmed!');
-        navigate(`/bookings`);
-      }, 1500);
-    } catch (error) {
+
+    if (!bookedSeats.length) {
+      alert("No seats selected");
       setProcessing(false);
-      alert('⚠️ Payment failed. Please try again.');
+      return;
+    }
+
+    try {
+      const seatNumbers = bookedSeats.map((seat) => String(seat.seat_number));
+
+      const response = await axios.post(
+        "https://travels-nkfu.onrender.com/api/bookings/",
+        {
+          bus_id: bus.id,
+          seats: seatNumbers,
+        },
+        {
+          headers: { Authorization: `Token ${token}` },
+        }
+      );
+
+      const data = response.data;
+      console.log("✅ Booking Success:", data);
+      alert(data.message);
+
+      const ticketId = data.ticket_id;
+      const successfullyBookedSeats = data.seats;
+      const total_price = data.total_price;
+
+      await sendConfirmationEmail({
+        userName: formData.username,
+        userEmail: formData.email,
+        bus: data,
+        ticketId,
+        successfullyBookedSeats,
+        totalPrice: total_price,
+      });
+
+      const latestBooking = {
+        ticketId,
+        bookedSeats: successfullyBookedSeats,
+        bus: data,
+        finalPrice: total_price,
+        journeyDate: new Date().toISOString().split("T")[0],
+      };
+
+      localStorage.setItem("latestBooking", JSON.stringify(latestBooking));
+
+      navigate("/bookings");
+      setBookedSeats([]);
+    } catch (err) {
+      console.error("❌ Booking failed:", err.response?.data || err.message);
+      alert("⚠️ Booking failed. Please try again.");
+    } finally {
+      setProcessing(false);
     }
   };
 
-  const bus = location.state?.bus;
-
-  // Payment loading skeleton
-  const PaymentSkeleton = () => (
-    <div className="bg-white shadow-lg rounded-xl w-full max-w-md p-6 animate-pulse">
-      {/* Back Button Skeleton */}
-      <div className="mb-4 h-4 bg-gray-200 rounded w-16"></div>
-      
-      {/* Header Skeleton */}
-      <div className="text-center mb-6">
-        <div className="h-8 bg-gray-300 rounded w-3/4 mx-auto mb-2"></div>
-        <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
-      </div>
-
-      {/* Bus Summary Skeleton */}
-      <div className="bg-gray-100 rounded-xl p-4 mb-4">
-        <div className="h-4 bg-gray-200 rounded w-1/3 mx-auto mb-3"></div>
-        <div className="flex justify-between mb-4">
-          <div className="space-y-2">
-            <div className="h-6 bg-gray-300 rounded w-16"></div>
-            <div className="h-4 bg-gray-200 rounded w-20"></div>
-          </div>
-          <div className="h-4 bg-gray-200 rounded w-8 self-center"></div>
-          <div className="space-y-2 text-right">
-            <div className="h-6 bg-gray-300 rounded w-16 ml-auto"></div>
-            <div className="h-4 bg-gray-200 rounded w-20 ml-auto"></div>
-          </div>
-        </div>
-        <div className="h-10 bg-gray-200 rounded w-3/4 mx-auto"></div>
-      </div>
-
-      {/* Pricing Skeleton */}
-      <div className="space-y-3 mb-6">
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className="flex justify-between">
-            <div className="h-4 bg-gray-200 rounded w-1/3"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-          </div>
-        ))}
-      </div>
-
-      {/* Coupon Skeleton */}
-      <div className="mb-6">
-        <div className="h-4 bg-gray-200 rounded w-1/3 mb-2"></div>
-        <div className="flex gap-2">
-          <div className="flex-grow h-10 bg-gray-200 rounded"></div>
-          <div className="w-20 h-10 bg-gray-300 rounded"></div>
-        </div>
-      </div>
-
-      {/* QR Code Skeleton */}
-      <div className="my-6 p-5 bg-gray-100 rounded-xl flex flex-col items-center gap-4">
-        <div className="h-5 bg-gray-200 rounded w-2/3"></div>
-        <div className="w-40 h-40 bg-gray-300 rounded-lg"></div>
-        <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-      </div>
-
-      {/* Button Skeleton */}
-      <div className="h-12 bg-gray-300 rounded-xl"></div>
-    </div>
-  );
-
-  // Payment processing animation
-  const PaymentProcessing = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl p-8 max-w-sm w-full mx-4 text-center">
-        <div className="relative mb-4">
-          <div className="w-16 h-16 border-4 border-green-200 border-t-green-600 rounded-full animate-spin mx-auto"></div>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-          </div>
-        </div>
-        <h3 className="text-xl font-bold text-gray-800 mb-2">Processing Payment</h3>
-        <p className="text-gray-600 mb-4">Please wait while we confirm your booking</p>
-        <div className="flex justify-center space-x-1">
-          <div className="w-2 h-2 bg-green-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-          <div className="w-2 h-2 bg-green-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-          <div className="w-2 h-2 bg-green-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-        </div>
-      </div>
-    </div>
-  );
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center px-4 py-10">
-        <PaymentSkeleton />
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 font-medium">Loading payment details...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center px-4 py-10">
-      {processing && <PaymentProcessing />}
-      
-      <div className="bg-white shadow-lg rounded-xl w-full max-w-md p-6">
-        {/* Back Button */}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-8 px-4 sm:px-6 lg:px-8">
+      {processing && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-8 shadow-2xl text-center max-w-sm mx-4">
+            <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Processing Payment</h3>
+            <p className="text-gray-600">Please wait while we confirm your booking...</p>
+          </div>
+        </div>
+      )}
+
+      <div className="max-w-5xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center text-gray-600 hover:text-blue-600 font-medium transition-colors mb-4 group"
+            disabled={processing}
+          >
+            <svg className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Selection
+          </button>
+          <h1 className="text-4xl font-bold text-gray-900 mb-3 bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
+            Complete Payment
+          </h1>
+          <p className="text-lg text-gray-600 max-w-md mx-auto">
+            Review your booking details and complete the payment
+          </p>
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Left Column - Payment Details */}
+          <div className="space-y-6">
+            {/* Journey Summary Card */}
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">{bus.bus_name}</h3>
+                  <p className="text-gray-500 text-sm">{bus.bus_number}</p>
+                </div>
+                <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">
+                  {bookedSeats.length} Seat{bookedSeats.length > 1 ? 's' : ''}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between mb-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-gray-900">{formatTime(bus.start_time)}</div>
+                  <div className="text-gray-700 font-medium mt-1">{bus.origin}</div>
+                </div>
+                
+                <div className="flex-1 mx-4 relative">
+                  <div className="h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                </div>
+
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-gray-900">{formatTime(bus.end_time)}</div>
+                  <div className="text-gray-700 font-medium mt-1">{bus.destination}</div>
+                </div>
+              </div>
+
+              <div className="bg-blue-50 rounded-xl p-4">
+                <div className="flex items-center justify-center gap-2">
+                  <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                  </svg>
+                  <span className="font-semibold text-blue-700">
+                    Selected Seats: {bookedSeats.map((seat) => seat.seat_number).join(", ")}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Pricing Card */}
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Price Breakdown</h3>
+              
+              <div className="space-y-3">
+                <div className="flex justify-between items-center py-2">
+                  <span className="text-gray-600">Price per seat</span>
+                  <span className="font-semibold">₹{pricePerSeat}</span>
+                </div>
+                
+                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span className="text-gray-600">Seats × {bookedSeats.length}</span>
+                  <span className="font-semibold">₹{totalPrice}</span>
+                </div>
+
+                {discountAmount > 0 && (
+                  <div className="flex justify-between items-center py-2 text-green-600">
+                    <span>Discount Applied</span>
+                    <span className="font-semibold">-₹{discountAmount.toFixed(2)}</span>
+                  </div>
+                )}
+
+                <div className="flex justify-between items-center pt-3 border-t border-gray-200">
+                  <span className="text-lg font-bold text-gray-900">Total Amount</span>
+                  <span className="text-2xl font-bold text-blue-600">₹{finalPrice.toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Contact Details Card */}
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Contact Details</h3>
+              
+              <div className="grid gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                  <input
+                    type="text"
+                    name="username"
+                    value={formData.username}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    disabled={processing}
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    disabled={processing}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column - Payment Action */}
+<div className="space-y-6">
+  {/* Coupon Card */}
+  <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+    <h3 className="text-lg font-bold text-gray-900 mb-4">Apply Coupon</h3>
+    
+    <div className="space-y-3">
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={couponCode}
+          onChange={(e) => setCouponCode(e.target.value)}
+          placeholder="Enter coupon code"
+          className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          disabled={processing}
+        />
         <button
-          onClick={() => navigate(-1)}
-          className="mb-4 text-gray-600 hover:text-blue-600 font-medium flex items-center gap-1"
+          onClick={applyCoupon}
+          className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50 whitespace-nowrap"
           disabled={processing}
         >
-          ← Back
+          Apply
         </button>
-
-        {/* Header */}
-        <h2 className="text-2xl font-bold text-center text-blue-700 mb-2">
-          Payment Summary
-        </h2>
-        <p className="text-center text-gray-500 mb-6">
-          Confirm your booking and complete payment
-        </p>
-
-        {/* Bus & Seat Summary */}
-        <div className="bg-white border border-gray-200 rounded-xl p-4 mb-4 shadow-sm">
-          <div className="text-center text-gray-500 text-sm font-light mb-3">
-            {bus?.bus_name || 'Bus Provider'}
-          </div>
-
-          <div className="flex justify-between items-center mb-4">
-            <div className="text-left">
-              <div className="font-bold text-black text-lg">
-                {formatTime(bus.start_time)}
-              </div>
-              <div className="text-gray-700 text-base">{bus?.origin}</div>
-            </div>
-
-            <div className="text-gray-400 text-xl font-semibold mx-4 select-none">→</div>
-
-            <div className="text-right">
-              <div className="font-bold text-black text-lg">
-                {formatTime(bus.end_time)}
-              </div>
-              <div className="text-gray-700 text-base">{bus?.destination}</div>
-            </div>
-          </div>
-
-          <div className="flex justify-center mt-3">
-            <div className="flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full font-semibold text-sm">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3 13h18M3 17h18M7 13v4M17 13v4M7 21h10a1 1 0 001-1v-3H6v3a1 1 0 001 1zM7 7h10v6H7z"
-                />
-              </svg>
-              <span>
-                {bookedSeats.length} Seat{bookedSeats.length > 1 ? 's' : ''} :{' '}
-                {bookedSeats.map(seat => seat.seat_number).join(', ')}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Pricing Details */}
-        <div className="space-y-2 mb-6 text-gray-700">
-          <p className="flex justify-between">
-            <span>Price per seat:</span> <span>₹{pricePerSeat}</span>
-          </p>
-          <p className="flex justify-between font-medium">
-            <span>Total:</span> <span>₹{totalPrice}</span>
-          </p>
-
-          {discountAmount > 0 && (
-            <p className="flex justify-between text-green-600">
-              <span>Discount:</span> <span>-₹{discountAmount.toFixed(2)}</span>
-            </p>
-          )}
-
-          <hr />
-          <p className="flex justify-between text-lg font-bold text-blue-700">
-            <span>Final Price:</span> <span>₹{finalPrice.toFixed(2)}</span>
-          </p>
-        </div>
-
-<div className="mb-6">
-  <label className="block text-gray-600 mb-2 font-medium">
-    Have a coupon?
-  </label>
-
-  {/* Input + Button side by side */}
-  <div className="flex items-center gap-2">
-    <input
-      type="text"
-      value={couponCode}
-      placeholder="Enter coupon code"
-      onChange={(e) => setCouponCode(e.target.value)}
-      className="flex-grow border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-400 outline-none min-w-0"
-      disabled={processing}
-    />
-    <button
-      onClick={applyCoupon}
-      className="shrink-0 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition disabled:bg-gray-400"
-      disabled={processing}
-    >
-      Apply
-    </button>
+      </div>
+      {couponError && (
+        <p className="text-red-500 text-sm font-medium">{couponError}</p>
+      )}
+      
+      <div className="text-xs text-gray-500">
+        <p>Available coupons: SAVE10, FLAT50, SAVE20</p>
+      </div>
+    </div>
   </div>
 
-  {couponError && (
-    <p className="text-red-500 text-sm mt-2">{couponError}</p>
-  )}
-</div>
-
-
-        {/* QR Code Section */}
-        <div className="my-6 p-5 bg-gray-50 border border-gray-200 rounded-xl flex flex-col items-center gap-4 shadow-sm">
-          <h4 className="text-blue-700 font-semibold text-lg">
-            Scan to pay ₹{finalPrice.toFixed(2)}
-          </h4>
-          <div className="bg-white p-4 rounded-lg shadow-md">
-            <QRCode
-              value={`upi://pay?pa=6302543439@axl&pn=VipulStore&am=${finalPrice.toFixed(2)}&cu=INR`}
-              size={160}
-            />
-          </div>
-          <p className="text-gray-600 text-sm">
-            UPI ID: <span className="font-medium">6302543439@axl</span>
-          </p>
+  {/* QR Payment Card */}
+  <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+    <div className="text-center mb-4">
+      <h3 className="text-lg font-bold text-gray-900 mb-2">Scan to Pay</h3>
+      <p className="text-2xl font-bold text-blue-600">₹{finalPrice.toFixed(2)}</p>
+    </div>
+    
+    <div className="flex justify-center mb-4">
+      <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+        <div className="bg-white p-3 rounded-lg shadow-sm flex justify-center">
+          <QRCode
+            value={`upi://pay?pa=6302543439@axl&pn=VipulStore&am=${finalPrice.toFixed(2)}&cu=INR`}
+            size={180}
+          />
         </div>
+      </div>
+    </div>
+    
+    <div className="text-center">
+      <p className="text-sm text-gray-600 mb-1">UPI ID</p>
+      <p className="font-mono font-semibold text-gray-800 bg-gray-100 px-3 py-2 rounded-lg break-all">
+        6302543439@axl
+      </p>
+    </div>
+  </div>
 
-        {/* Pay Button */}
-        <button
-          onClick={handlePayment}
-          disabled={processing}
-          className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold text-lg hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
-        >
-          {processing ? 'Processing...' : 'Confirm Booking'}
-        </button>
+  {/* Confirm Payment Button */}
+  <button
+    onClick={handlePayment}
+    disabled={processing}
+    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed"
+  >
+    {processing ? (
+      <div className="flex items-center justify-center">
+        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-3"></div>
+        Processing Payment...
+      </div>
+    ) : (
+      `Confirm & Pay ₹${finalPrice.toFixed(2)}`
+    )}
+  </button>
+</div>
+        </div>
       </div>
     </div>
   );

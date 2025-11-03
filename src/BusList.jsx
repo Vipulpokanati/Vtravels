@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const BusList = ({ userId }) => {
+const BusList = ({ userId ,token}) => {
   const [buses, setBuses] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
@@ -142,37 +142,70 @@ const BusList = ({ userId }) => {
           {filteredBuses.length > 0 ? (
             filteredBuses.map(bus => (
               <div
-                key={bus.id}
-                className="bg-white rounded-xl shadow-md hover:shadow-lg transition transform hover:-translate-y-1 border border-blue-50"
-              >
-                {/* Top Section: Blue */}
-                <div className="bg-blue-600 rounded-t-xl text-white p-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <h3 className="text-xl font-semibold">{bus.bus_name}</h3>
-                    <span className="text-sm bg-blue-500 bg-opacity-30 px-2 py-1 rounded-md">
-                      {bus.features}
-                    </span>
-                  </div>
-                  <p className="text-sm">
-                    <span className="font-medium">{bus.origin}</span> →{' '}
-                    <span className="font-medium">{bus.destination}</span>
-                  </p>
-                </div>
+  key={bus.id}
+  className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 overflow-hidden"
+>
+  {/* Top Section with Gradient */}
+  <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-t-2xl text-white p-6">
+    <div className="flex justify-between items-start mb-3">
+      <div>
+        <h3 className="text-xl font-bold tracking-tight">{bus.bus_name}</h3>
+        <div className="flex items-center mt-1 space-x-2">
+          <span className="text-blue-100 text-sm font-medium">{bus.origin}</span>
+          <svg className="w-4 h-4 text-blue-200" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+          </svg>
+          <span className="text-blue-100 text-sm font-medium">{bus.destination}</span>
+        </div>
+      </div>
+      <span className="text-xs font-semibold bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full">
+        {bus.features}
+      </span>
+    </div>
+  </div>
 
-                {/* Bottom Section: White */}
-                <div className="p-4">
-                  <p className="text-gray-500 mb-1">🕒 Departure: {formatTime(bus.start_time)}</p>
-                  <p className="text-gray-500 mb-1">🎯 Arrival: {formatTime(bus.end_time)}</p>
-                  <p className="text-gray-500 mb-2">💰 Price: ₹{bus.price}</p>
-                  
-                  <button
-                    onClick={() => navigate(`/bus/${bus.id}`)}
-                    className="mt-2 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md transition font-semibold"
-                  >
-                    Book Now
-                  </button>
-                </div>
-              </div>
+  {/* Bottom Section */}
+  <div className="p-6">
+    {/* Journey Details */}
+    <div className="grid grid-cols-2 gap-4 mb-6">
+      <div className="space-y-1">
+        <div className="flex items-center text-gray-600">
+          <svg className="w-4 h-4 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span className="text-sm font-medium">Departure</span>
+        </div>
+        <p className="text-lg font-semibold text-gray-900">{formatTime(bus.start_time)}</p>
+      </div>
+      
+      <div className="space-y-1">
+        <div className="flex items-center text-gray-600">
+          <svg className="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span className="text-sm font-medium">Arrival</span>
+        </div>
+        <p className="text-lg font-semibold text-gray-900">{formatTime(bus.end_time)}</p>
+      </div>
+    </div>
+
+    {/* Price and CTA */}
+    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+      <div>
+        <p className="text-sm text-gray-600 font-medium">Starting from</p>
+        <p className="text-2xl font-bold text-gray-900">₹{bus.price}</p>
+      </div>
+      
+      <button
+        onClick={() => navigate(`/bus/${bus.id}`)}
+        className="group relative bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg"
+      >
+        <span className="relative z-10">Book Now</span>
+        <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 rounded-xl transition-opacity duration-300"></div>
+      </button>
+    </div>
+  </div>
+</div>
             ))
           ) : (
             <p className="text-center text-gray-500 col-span-full">No buses found.</p>
