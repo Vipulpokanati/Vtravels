@@ -223,7 +223,7 @@ const Payment = ({ token, userId }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center px-4 py-10">
+    <div className="min-h-screen flex items-center justify-center px-4">
       {processing && (
         <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center z-50">
           <div className="text-white text-lg font-semibold">
