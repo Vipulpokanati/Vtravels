@@ -31,8 +31,9 @@ const BusList = ({userId}) => {
           <div>Bus Number: {bus.bus_number}</div>
           <div>Origin: {bus.origin}</div>
           <div>Destination: {bus.destination}</div>
-          <div>Start Time: {bus.start_time}</div>
-          <div>End Time: {bus.end_time}</div>
+          <div>Start Time: {new Date(`1970-01-01T${bus.start_time}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}</div>
+          <div>End Time: {new Date(`1970-01-01T${bus.end_time}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}</div>
+
           <button onClick={() => handleViewSeats(bus.id)}>View Seats</button>
           <hr />
         </div>
